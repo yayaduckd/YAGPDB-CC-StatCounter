@@ -6,8 +6,6 @@
 {{$db_keyPrefix := "cStatsChMsgNum_"}}
 {{/*Special keys used by this command (such as the last reset date) will use this prefix.*/}}
 {{$db_specialKeyPrefix := "cStatsSpecial_"}}
-{{/*The ID of the admin role of the server. Only admins can see stats or change settings.*/}}
-{{$admin_role := 702124499822182410}}
 
 
 {{/*VARIABLE SETUP:*/}}
