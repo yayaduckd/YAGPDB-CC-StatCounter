@@ -1,0 +1,11 @@
+
+{{/*CONFIGURABLE SETTINGS:*/}}
+{{/*The ID to use for all database storage for this set of commands. Remember to change this in all commands. 1 by default.*/}}
+{{/*This can be any number, but it's recommended to not use the ID of any real user.*/}}
+{{$db_userID := 1}} 
+
+{{/*Sets up the variables that are used often within the code*/}}
+{{$channel_ID := (getChannel nil).ID}}
+
+
+{{$newDBValue := dbIncr 1 (joinStr "" "chMsgNum_" $channel_ID) 1}}

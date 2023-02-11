@@ -1,0 +1,29 @@
+{{/*CONFIGURABLE SETTINGS:*/}}
+{{/*The ID to use for all database storage for this set of commands. Remember to change this in all commands. 1 by default.*/}}
+{{/*This can be any number, but it's recommended to not use the ID of any real user.*/}}
+{{$db_userID := 1}} 
+
+
+{{/*Variable Setup:*/}}
+{{$fullMsg := ""}}
+
+
+{{if lt (len .CmdArgs) 1 }}
+    Not enough Command Arguments!
+{{else}}
+    {{if in (index .CmdArgs 0) "show"}}
+        {{$messageSentStats := dbGetPattern $db_userID "chMsgNum_%" 100 0}}
+        {{$current_description := "Stats:"}}
+        {{$new_description := ""}}
+        {{range $messageSentStats}}
+            {{$channelID := (slice .Key 9)}}
+            {{$channelName := ($.Guild.GetChannel (toInt $channelID)).Name}}
+            
+            {{/*$new_description = joinStr "\n" $current_description (joinStr "" .Key ": " .Value " messages")*/}}
+            {{$new_description = joinStr "\n" $current_description (joinStr "" $channelName ": " .Value " messages")}}
+            {{$current_description = $new_description}}
+        {{end}}
+        {{$fullMsg = $current_description}}
+        {{sendMessage nil $fullMsg}}
+    {{end}}
+{{end}}
