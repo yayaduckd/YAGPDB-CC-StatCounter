@@ -1,11 +1,16 @@
-
 {{/*CONFIGURABLE SETTINGS:*/}}
 {{/*The ID to use for all database storage for this set of commands. Remember to change this in all commands. 1 by default.*/}}
 {{/*This can be any number, but it's recommended to not use the ID of any real user.*/}}
-{{$db_userID := 1}} 
+{{$db_userID := 1}}
+{{/*The prefix used for database keys containing the number of messages in a channel. The key will be of the form [prefix][channelID]*/}}
+{{$db_keyPrefix := "cStatsChMsgNum_"}}
+{{/*Special keys used by this command (such as the last reset date) will use this prefix.*/}}
+{{$db_specialKeyPrefix := "cStats_"}}
+{{/*The ID of the admin role of the server. Only admins can see stats or change settings.*/}}
+{{$admin_role := 702124499822182410}}
 
 {{/*Sets up the variables that are used often within the code*/}}
 {{$channel_ID := (getChannel nil).ID}}
 
 
-{{$newDBValue := dbIncr 1 (joinStr "" "chMsgNum_" $channel_ID) 1}}
+{{$newDBValue := dbIncr 1 (joinStr "" $db_keyPrefix $channel_ID) 1}}

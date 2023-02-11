@@ -1,29 +1,43 @@
 {{/*CONFIGURABLE SETTINGS:*/}}
 {{/*The ID to use for all database storage for this set of commands. Remember to change this in all commands. 1 by default.*/}}
 {{/*This can be any number, but it's recommended to not use the ID of any real user.*/}}
-{{$db_userID := 1}} 
+{{$db_userID := 1}}
+{{/*The prefix used for database keys containing the number of messages in a channel. The key will be of the form [prefix][channelID]*/}}
+{{$db_keyPrefix := "cStatsChMsgNum_"}}
+{{/*Special keys used by this command (such as the last reset date) will use this prefix.*/}}
+{{$db_specialKeyPrefix := "cStatsSpecial_"}}
+{{/*The ID of the admin role of the server. Only admins can see stats or change settings.*/}}
+{{$admin_role := 702124499822182410}}
 
 
-{{/*Variable Setup:*/}}
+{{/*VARIABLE SETUP:*/}}
 {{$fullMsg := ""}}
-
+{{$dbPrefixLength := len $db_keyPrefix}}
+{{$dbLastResetTime := (dbGet $db_userID (joinStr "" $db_specialKeyPrefix "LASTRESET")).UpdatedAt}}
 
 {{if lt (len .CmdArgs) 1 }}
     Not enough Command Arguments!
 {{else}}
+
+    {{/*SHOW command*/}}
     {{if in (index .CmdArgs 0) "show"}}
-        {{$messageSentStats := dbGetPattern $db_userID "chMsgNum_%" 100 0}}
-        {{$current_description := "Stats:"}}
+        {{$messageSentStats := dbGetPattern $db_userID (joinStr "" $db_keyPrefix "%") 100 0}}
+        {{$current_description := (joinStr "" "**Messages sent per channel** *(since " (formatTime $dbLastResetTime) ")*")}}
         {{$new_description := ""}}
+        {{/*Iterates over all database entries with the correct prefix. Updates description each time.*/}}
         {{range $messageSentStats}}
-            {{$channelID := (slice .Key 9)}}
+            {{$channelID := (slice .Key $dbPrefixLength)}}
             {{$channelName := ($.Guild.GetChannel (toInt $channelID)).Name}}
-            
-            {{/*$new_description = joinStr "\n" $current_description (joinStr "" .Key ": " .Value " messages")*/}}
             {{$new_description = joinStr "\n" $current_description (joinStr "" $channelName ": " .Value " messages")}}
             {{$current_description = $new_description}}
         {{end}}
         {{$fullMsg = $current_description}}
         {{sendMessage nil $fullMsg}}
+
+        {{/*RESET command*/}}
+    {{else if in (index .CmdArgs 0) "reset"}}
+        {{$valuesReset := dbDelMultiple (sdict "userID" 1) 100 0}}
+        {{dbSet $db_userID (joinStr "" $db_specialKeyPrefix "LASTRESET") 1}}
+        All stats reset!
     {{end}}
 {{end}}
